@@ -135,6 +135,39 @@ withCallback:(RCTResponseSenderBlock) callback
   [contact setObject: phoneNumbers forKey:@"phoneNumbers"];
   //end phone numbers
 
+  //handle street addresses
+  NSMutableArray *streetAddresses = [[NSMutableArray alloc] init];
+
+  ABMultiValueRef multiAddresses = ABRecordCopyValue(person, kABPersonAddressProperty);
+
+  for(CFIndex i=0;i<ABMultiValueGetCount(multiAddresses);i++) {
+
+    CFDictionaryRef addressRef = ABMultiValueCopyValueAtIndex(multiAddresses, i);
+    CFStringRef addressLabelRef = ABMultiValueCopyLabelAtIndex(multiAddresses, i);
+
+    NSDictionary *addressEntry = (__bridge_transfer NSDictionary *) addressRef;
+    NSString *addressLabel = (__bridge_transfer NSString *) ABAddressBookCopyLocalizedLabel(addressLabelRef);
+
+//    if(addressRef){
+//      CFRelease(addressRef);
+//    }
+//
+//    if(addressLabelRef){
+//      CFRelease(addressLabelRef);
+//    }
+
+    NSMutableDictionary* address = [NSMutableDictionary dictionary];
+
+    [address setObject: addressEntry forKey:@"address"];
+
+    [address setObject: addressLabel forKey:@"label"];
+
+    [streetAddresses addObject:address];
+  }
+
+  [contact setObject: streetAddresses forKey:@"streetAddresses"];
+  //end street addresses
+
   //handle emails
   NSMutableArray *emailAddreses = [[NSMutableArray alloc] init];
 
@@ -182,7 +215,7 @@ withCallback:(RCTResponseSenderBlock) callback
     tempfilePath = [[NSFileManager defaultManager]
     stringWithFileSystemRepresentation:template
     length:strlen(template)];
-    
+
     tempfilePath = [tempfilePath stringByAppendingString:@".png"];
 
     [data writeToFile:tempfilePath options:NSAtomicWrite error:&err];
